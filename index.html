@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz App - v3</title>
+    <title>Quiz App - v4</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -22,8 +22,15 @@
     <div id="start-screen" class="start-screen">
         <h2>Welcome to the Quiz!</h2>
         <p>You have 30 seconds per question. Good luck!</p>
+        <label for="difficulty">Select difficulty:</label>
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
         <button id="start-btn">Start Quiz</button>
     </div>
+    <div id="feedback" class="feedback"></div>
 
     <script src="script.js"></script>
 </body>

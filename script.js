@@ -1,4 +1,4 @@
-const quizData = [
+const easyQuestions = [
     {
         question: "What is the capital of France?",
         options: ["London", "Berlin", "Paris", "Madrid"],
@@ -13,7 +13,10 @@ const quizData = [
         question: "What is the largest mammal?",
         options: ["Elephant", "Blue Whale", "Giraffe", "Hippopotamus"],
         correctAnswer: 1
-    },
+    }
+];
+
+const mediumQuestions = [
     {
         question: "Who painted the Mona Lisa?",
         options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"],
@@ -23,12 +26,36 @@ const quizData = [
         question: "What is the chemical symbol for gold?",
         options: ["Ag", "Au", "Fe", "Cu"],
         correctAnswer: 1
+    },
+    {
+        question: "Which country is home to the kangaroo?",
+        options: ["New Zealand", "South Africa", "Australia", "Brazil"],
+        correctAnswer: 2
     }
 ];
 
+const hardQuestions = [
+    {
+        question: "What is the smallest prime number greater than 100?",
+        options: ["101", "103", "107", "109"],
+        correctAnswer: 1
+    },
+    {
+        question: "Who wrote the play 'Waiting for Godot'?",
+        options: ["Samuel Beckett", "Arthur Miller", "Tennessee Williams", "Eugene O'Neill"],
+        correctAnswer: 0
+    },
+    {
+        question: "What is the capital of Burkina Faso?",
+        options: ["Ouagadougou", "Bamako", "Niamey", "Dakar"],
+        correctAnswer: 0
+    }
+];
+
+let quizData = [];
 let currentQuestion = 0;
 let score = 0;
-let answered = new Array(quizData.length).fill(false);
+let answered = [];
 let timeLeft = 30;
 let timerInterval;
 
@@ -41,8 +68,23 @@ const resultEl = document.getElementById("result");
 const timerEl = document.getElementById("timer");
 const startScreenEl = document.getElementById("start-screen");
 const startBtn = document.getElementById("start-btn");
+const difficultySelect = document.getElementById("difficulty");
+const feedbackEl = document.getElementById("feedback");
 
 function startQuiz() {
+    const difficulty = difficultySelect.value;
+    switch (difficulty) {
+        case "easy":
+            quizData = easyQuestions;
+            break;
+        case "medium":
+            quizData = mediumQuestions;
+            break;
+        case "hard":
+            quizData = hardQuestions;
+            break;
+    }
+    answered = new Array(quizData.length).fill(false);
     startScreenEl.style.display = "none";
     loadQuestion();
     startTimer();
@@ -82,6 +124,9 @@ function selectOption(index) {
 
     if (index === correctAnswer) {
         score++;
+        showFeedback("Correct!", "#4CAF50");
+    } else {
+        showFeedback("Incorrect!", "#f44336");
     }
 
     answered[currentQuestion] = true;
@@ -136,6 +181,15 @@ function nextQuestion() {
     } else {
         checkQuizCompletion();
     }
+}
+
+function showFeedback(message, color) {
+    feedbackEl.textContent = message;
+    feedbackEl.style.backgroundColor = color;
+    feedbackEl.style.display = "block";
+    setTimeout(() => {
+        feedbackEl.style.display = "none";
+    }, 2000);
 }
 
 prevBtn.addEventListener("click", () => {
