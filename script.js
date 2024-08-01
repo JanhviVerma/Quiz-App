@@ -58,6 +58,8 @@ let score = 0;
 let answered = [];
 let timeLeft = 30;
 let timerInterval;
+let username = "";
+let difficulty = "";
 
 const questionEl = document.getElementById("question");
 const optionsEl = document.getElementById("options");
@@ -69,10 +71,20 @@ const timerEl = document.getElementById("timer");
 const startScreenEl = document.getElementById("start-screen");
 const startBtn = document.getElementById("start-btn");
 const difficultySelect = document.getElementById("difficulty");
+const usernameInput = document.getElementById("username");
 const feedbackEl = document.getElementById("feedback");
+const leaderboardEl = document.getElementById("leaderboard");
+const leaderboardListEl = document.getElementById("leaderboard-list");
+const closeLeaderboardBtn = document.getElementById("close-leaderboard");
 
 function startQuiz() {
-    const difficulty = difficultySelect.value;
+    username = usernameInput.value.trim();
+    if (!username) {
+        alert("Please enter your name");
+        return;
+    }
+    
+    difficulty = difficultySelect.value;
     switch (difficulty) {
         case "easy":
             quizData = easyQuestions;
@@ -150,6 +162,8 @@ function checkQuizCompletion() {
         clearInterval(timerInterval);
         resultEl.textContent = `Quiz completed! Your score: ${score}/${quizData.length}`;
         nextBtn.disabled = true;
+        saveScore();
+        showLeaderboard();
     }
 }
 
@@ -192,6 +206,26 @@ function showFeedback(message, color) {
     }, 2000);
 }
 
+function saveScore() {
+    const scores = JSON.parse(localStorage.getItem("quizScores")) || [];
+    scores.push({ username, score, difficulty });
+    localStorage.setItem("quizScores", JSON.stringify(scores));
+}
+
+function showLeaderboard() {
+    const scores = JSON.parse(localStorage.getItem("quizScores")) || [];
+    scores.sort((a, b) => b.score - a.score);
+
+    leaderboardListEl.innerHTML = "";
+    scores.slice(0, 10).forEach((entry, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${index + 1}. ${entry.username} - ${entry.score} (${entry.difficulty})`;
+        leaderboardListEl.appendChild(li);
+    });
+
+    leaderboardEl.style.display = "block";
+}
+
 prevBtn.addEventListener("click", () => {
     if (currentQuestion > 0) {
         currentQuestion--;
@@ -203,3 +237,7 @@ prevBtn.addEventListener("click", () => {
 nextBtn.addEventListener("click", nextQuestion);
 
 startBtn.addEventListener("click", startQuiz);
+
+closeLeaderboardBtn.addEventListener("click", () => {
+    leaderboardEl.style.display = "none";
+});
