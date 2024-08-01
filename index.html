@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz App - v5</title>
+    <title>Quiz App - v6</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -18,6 +18,7 @@
             <button id="next">Next</button>
         </div>
         <div id="result" class="result"></div>
+        <button id="show-leaderboard" class="show-leaderboard">Show Leaderboard</button>
     </div>
     <div id="start-screen" class="start-screen">
         <h2>Welcome to the Quiz!</h2>
@@ -37,6 +38,11 @@
         <h2>Leaderboard</h2>
         <ul id="leaderboard-list"></ul>
         <button id="close-leaderboard">Close</button>
+    </div>
+    <div id="review-screen" class="review-screen">
+        <h2>Review Your Answers</h2>
+        <div id="review-questions"></div>
+        <button id="close-review">Close Review</button>
     </div>
 
     <script src="script.js"></script>

@@ -60,6 +60,7 @@ let timeLeft = 30;
 let timerInterval;
 let username = "";
 let difficulty = "";
+let userAnswers = [];
 
 const questionEl = document.getElementById("question");
 const optionsEl = document.getElementById("options");
@@ -76,6 +77,10 @@ const feedbackEl = document.getElementById("feedback");
 const leaderboardEl = document.getElementById("leaderboard");
 const leaderboardListEl = document.getElementById("leaderboard-list");
 const closeLeaderboardBtn = document.getElementById("close-leaderboard");
+const showLeaderboardBtn = document.getElementById("show-leaderboard");
+const reviewScreenEl = document.getElementById("review-screen");
+const reviewQuestionsEl = document.getElementById("review-questions");
+const closeReviewBtn = document.getElementById("close-review");
 
 function startQuiz() {
     username = usernameInput.value.trim();
@@ -97,6 +102,7 @@ function startQuiz() {
             break;
     }
     answered = new Array(quizData.length).fill(false);
+    userAnswers = new Array(quizData.length).fill(null);
     startScreenEl.style.display = "none";
     loadQuestion();
     startTimer();
@@ -112,6 +118,9 @@ function loadQuestion() {
         button.classList.add("option");
         button.textContent = option;
         button.addEventListener("click", () => selectOption(index));
+        if (userAnswers[currentQuestion] === index) {
+            button.classList.add(index === question.correctAnswer ? "correct" : "incorrect");
+        }
         optionsEl.appendChild(button);
     });
 
@@ -142,6 +151,7 @@ function selectOption(index) {
     }
 
     answered[currentQuestion] = true;
+    userAnswers[currentQuestion] = index;
     updateButtons();
     checkQuizCompletion();
 }
@@ -153,17 +163,13 @@ function updateProgressBar() {
 
 function updateButtons() {
     prevBtn.disabled = currentQuestion === 0;
-    nextBtn.disabled = currentQuestion === quizData.length - 1 && answered[currentQuestion];
+    nextBtn.disabled = currentQuestion === quizData.length - 1 && !answered[currentQuestion];
     nextBtn.textContent = currentQuestion === quizData.length - 1 ? "Finish" : "Next";
 }
 
 function checkQuizCompletion() {
     if (answered.every(a => a)) {
-        clearInterval(timerInterval);
-        resultEl.textContent = `Quiz completed! Your score: ${score}/${quizData.length}`;
-        nextBtn.disabled = true;
-        saveScore();
-        showLeaderboard();
+        finishQuiz();
     }
 }
 
@@ -193,8 +199,60 @@ function nextQuestion() {
         loadQuestion();
         resetTimer();
     } else {
-        checkQuizCompletion();
+        finishQuiz();
     }
+}
+
+function finishQuiz() {
+    clearInterval(timerInterval);
+    resultEl.textContent = `Quiz completed! Your score: ${score}/${quizData.length}`;
+    saveScore();
+    showLeaderboard();
+    showReviewScreen();
+
+    // Change the "Finish" button to "New Game"
+    nextBtn.textContent = "New Game";
+    nextBtn.disabled = false;
+    nextBtn.removeEventListener("click", nextQuestion);
+    nextBtn.addEventListener("click", startNewGame);
+}
+
+function startNewGame() {
+    // Reset all game variables
+    currentQuestion = 0;
+    score = 0;
+    answered = [];
+    timeLeft = 30;
+    username = "";
+    difficulty = "";
+    userAnswers = [];
+
+    // Hide review screen and leaderboard
+    hideReviewScreen();
+    hideLeaderboard();
+
+    // Show start screen
+    startScreenEl.style.display = "block";
+
+    // Reset input fields
+    usernameInput.value = "";
+    difficultySelect.value = "easy";
+
+    // Reset result and progress bar
+    resultEl.textContent = "";
+    progressBarEl.innerHTML = "";
+
+    // Reset timer display
+    timerEl.textContent = "Time left: 30s";
+
+    // Reset next button
+    nextBtn.textContent = "Next";
+    nextBtn.removeEventListener("click", startNewGame);
+    nextBtn.addEventListener("click", nextQuestion);
+
+    // Clear the question and options display
+    questionEl.textContent = "";
+    optionsEl.innerHTML = "";
 }
 
 function showFeedback(message, color) {
@@ -226,6 +284,48 @@ function showLeaderboard() {
     leaderboardEl.style.display = "block";
 }
 
+function hideLeaderboard() {
+    leaderboardEl.style.display = "none";
+}
+
+function showReviewScreen() {
+    reviewQuestionsEl.innerHTML = "";
+    quizData.forEach((question, index) => {
+        const reviewQuestion = document.createElement("div");
+        reviewQuestion.classList.add("review-question");
+        
+        const questionTitle = document.createElement("h3");
+        questionTitle.textContent = `Question ${index + 1}: ${question.question}`;
+        reviewQuestion.appendChild(questionTitle);
+
+        const optionsList = document.createElement("ul");
+        optionsList.classList.add("review-options");
+        question.options.forEach((option, optionIndex) => {
+            const optionItem = document.createElement("li");
+            optionItem.textContent = option;
+            if (optionIndex === question.correctAnswer) {
+                optionItem.classList.add("correct");
+            }
+            if (userAnswers[index] === optionIndex) {
+                optionItem.classList.add("selected");
+                if (userAnswers[index] !== question.correctAnswer) {
+                    optionItem.classList.add("incorrect");
+                }
+            }
+            optionsList.appendChild(optionItem);
+        });
+        reviewQuestion.appendChild(optionsList);
+
+        reviewQuestionsEl.appendChild(reviewQuestion);
+    });
+
+    reviewScreenEl.style.display = "flex";
+}
+
+function hideReviewScreen() {
+    reviewScreenEl.style.display = "none";
+}
+
 prevBtn.addEventListener("click", () => {
     if (currentQuestion > 0) {
         currentQuestion--;
@@ -234,10 +334,18 @@ prevBtn.addEventListener("click", () => {
     }
 });
 
-nextBtn.addEventListener("click", nextQuestion);
+nextBtn.addEventListener("click", () => {
+    if (nextBtn.textContent === "New Game") {
+        startNewGame();
+    } else {
+        nextQuestion();
+    }
+});
 
 startBtn.addEventListener("click", startQuiz);
 
-closeLeaderboardBtn.addEventListener("click", () => {
-    leaderboardEl.style.display = "none";
-});
+closeLeaderboardBtn.addEventListener("click", hideLeaderboard);
+
+showLeaderboardBtn.addEventListener("click", showLeaderboard);
+
+closeReviewBtn.addEventListener("click", hideReviewScreen);
