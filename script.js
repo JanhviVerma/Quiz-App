@@ -29,6 +29,8 @@ const quizData = [
 let currentQuestion = 0;
 let score = 0;
 let answered = new Array(quizData.length).fill(false);
+let timeLeft = 30;
+let timerInterval;
 
 const questionEl = document.getElementById("question");
 const optionsEl = document.getElementById("options");
@@ -36,6 +38,15 @@ const prevBtn = document.getElementById("prev");
 const nextBtn = document.getElementById("next");
 const progressBarEl = document.getElementById("progress-bar");
 const resultEl = document.getElementById("result");
+const timerEl = document.getElementById("timer");
+const startScreenEl = document.getElementById("start-screen");
+const startBtn = document.getElementById("start-btn");
+
+function startQuiz() {
+    startScreenEl.style.display = "none";
+    loadQuestion();
+    startTimer();
+}
 
 function loadQuestion() {
     const question = quizData[currentQuestion];
@@ -91,8 +102,39 @@ function updateButtons() {
 
 function checkQuizCompletion() {
     if (answered.every(a => a)) {
+        clearInterval(timerInterval);
         resultEl.textContent = `Quiz completed! Your score: ${score}/${quizData.length}`;
         nextBtn.disabled = true;
+    }
+}
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = `Time left: ${timeLeft}s`;
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            selectOption(-1); // Force selection of no option
+            nextQuestion();
+        }
+    }, 1000);
+}
+
+function resetTimer() {
+    clearInterval(timerInterval);
+    timeLeft = 30;
+    timerEl.textContent = `Time left: ${timeLeft}s`;
+    startTimer();
+}
+
+function nextQuestion() {
+    if (currentQuestion < quizData.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+        resetTimer();
+    } else {
+        checkQuizCompletion();
     }
 }
 
@@ -100,16 +142,10 @@ prevBtn.addEventListener("click", () => {
     if (currentQuestion > 0) {
         currentQuestion--;
         loadQuestion();
+        resetTimer();
     }
 });
 
-nextBtn.addEventListener("click", () => {
-    if (currentQuestion < quizData.length - 1) {
-        currentQuestion++;
-        loadQuestion();
-    } else {
-        checkQuizCompletion();
-    }
-});
+nextBtn.addEventListener("click", nextQuestion);
 
-loadQuestion();
+startBtn.addEventListener("click", startQuiz);
